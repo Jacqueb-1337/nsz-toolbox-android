@@ -11,13 +11,13 @@
             android:name=".MainActivity"
             android:exported="true">
 
-            <!-- Home-screen launcher -->
+            <!-- Home‐screen launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Receive a shared file -->
+            <!-- Receive a shared NSZ file -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -25,5 +25,6 @@
             </intent-filter>
 
         </activity>
+
     </application>
 </manifest>
