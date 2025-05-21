@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import com.github.luben.zstd.ZstdInputStream
 import com.jacqueb.nsztoolbox.R
 
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private val folderPicker =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
             if (uri != null) {
+                // Persist permissions and save the Uri string once
                 contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         deleteToggle = findViewById(R.id.delete_switch)
         logText = findViewById(R.id.log_text)
 
+        // Restore saved folder URI (or launch picker)
         prefs.getString("output_folder", null)?.let {
             outputFolderUri = Uri.parse(it)
         } ?: folderPicker.launch(null)
@@ -51,6 +54,7 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putBoolean("delete_nsz", isChecked).apply()
         }
 
+        // If launched from “Share” menu:
         if (intent?.action == Intent.ACTION_SEND) {
             intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
                 processNSZ(it)
@@ -63,22 +67,26 @@ class MainActivity : AppCompatActivity() {
             val fileName = inputUri.lastPathSegment ?: "input.nsz"
             val outputName = fileName.substringBeforeLast('.') + ".nsp"
 
-            // Create output file via SAF
-            val outUri = DocumentsContract.createDocument(
-                contentResolver,
-                outputFolderUri,
+            // Wrap the tree URI as a DocumentFile directory
+            val tree = DocumentFile.fromTreeUri(this, outputFolderUri)
+                ?: throw IllegalArgumentException("Invalid output folder URI")
+
+            // Create a new file in that tree
+            val newFile = tree.createFile(
                 "application/octet-stream",
                 outputName
-            ) ?: throw Exception("Cannot create output file")
+            ) ?: throw Exception("Could not create $outputName")
 
-            contentResolver.openOutputStream(outUri)?.use { out ->
-                contentResolver.openInputStream(inputUri)?.use { inp ->
+            // Stream decompression into the new file
+            contentResolver.openOutputStream(newFile.uri)!!.use { out ->
+                contentResolver.openInputStream(inputUri)!!.use { inp ->
                     ZstdInputStream(inp).use { zstdIn ->
                         zstdIn.copyTo(out)
                     }
                 }
             }
 
+            // Optionally delete the original NSZ
             if (deleteToggle.isChecked) {
                 DocumentsContract.deleteDocument(contentResolver, inputUri)
             }
