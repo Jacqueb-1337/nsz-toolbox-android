@@ -1,48 +1,56 @@
-plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
-    id "com.chaquo.python"
-}
+// File: app/build.gradle
+
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.chaquo.python'
 
 android {
-    compileSdkVersion 30
+    namespace 'com.example.nsztoolbox'
+    compileSdkVersion 34
 
     defaultConfig {
-        applicationId "com.jacqueb.nsztoolbox"
-        minSdkVersion 21
-        targetSdkVersion 30
+        applicationId "com.example.nsztoolbox"
+        minSdkVersion 26
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
         ndk {
-            abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+        }
+
+        python {
+            buildPython "python3"
+            pip {
+                install "requests"
+                install "six"
+                install "pycryptodome==3.20.0"
+                install "zstandard==0.22.0" // will pick up a wheel if --only-binary=:all: is implicit
+            }
         }
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix ".debug"
-        }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
-                          "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
         }
     }
 
-    sourceSets {
-        main {
-            assets.srcDirs += files("$buildDir/python/interpreter")
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 }
 
-python {
-    buildPython "python3"
-    pip {
-        install "requests"
-        install "six"
-        install "pycryptodome==3.20.0"
-        install "zstandard==0.22.0 --only-binary=:all:"
-    }
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.21"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
