@@ -20,10 +20,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var outputTreeUri: Uri? = null
+    private var pendingSendIntent: Intent? = null
 
     companion object {
         private const val REQUEST_CODE_PICK_OUTPUT = 1001
-        private const val REQUEST_CODE_HANDLE_SEND = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,8 +40,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent?.action == Intent.ACTION_SEND) {
-            startActivityForResult(Intent(), REQUEST_CODE_HANDLE_SEND)
-            handleSend(intent)
+            pendingSendIntent = intent
+            Toast.makeText(this, "Please choose an output folder", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -56,23 +56,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_CODE_PICK_OUTPUT -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    data?.data?.also { uri ->
-                        outputTreeUri = uri
-                        contentResolver.takePersistableUriPermission(
-                            uri,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                        )
-                        Toast.makeText(this, "Output folder selected", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            REQUEST_CODE_HANDLE_SEND -> {
-                if (intent?.action == Intent.ACTION_SEND) {
-                    handleSend(intent)
-                }
+        if (requestCode == REQUEST_CODE_PICK_OUTPUT && resultCode == Activity.RESULT_OK) {
+            data?.data?.also { uri ->
+                outputTreeUri = uri
+                contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                Toast.makeText(this, "Output folder selected", Toast.LENGTH_SHORT).show()
+                pendingSendIntent?.let { handleSend(it) }
+                pendingSendIntent = null
             }
         }
     }
@@ -110,7 +103,6 @@ class MainActivity : AppCompatActivity() {
 
             val py = Python.getInstance()
             val builtins = py.getBuiltins()
-
             val sys = py.getModule("sys")
             sys["stdout"] = PyObject.fromJava(logPrintWriter)
             sys["stderr"] = PyObject.fromJava(logPrintWriter)
