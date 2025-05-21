@@ -1,6 +1,7 @@
 package com.jacqueb.nsztoolbox
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import android.app.Activity
@@ -117,20 +118,19 @@ class MainActivity : AppCompatActivity() {
             val inputStream = contentResolver.openInputStream(inputUri)!!
             tempInput.outputStream().use { it.write(inputStream.readBytes()) }
 
-            val outputName = inputName.replace(".nsz", ".nsp")
-            val tempOutput = File(cacheDir, outputName)
-
             val py = Python.getInstance()
             val sys = py.getModule("sys")
             sys["stdout"] = PyObject.fromJava(logPrintWriter)
             sys["stderr"] = PyObject.fromJava(logPrintWriter)
             logPrintWriter.flush()
 
-            // NEW: Call our patched main.py function instead of NSZ directly
             py.getModule("main").callAttr("convert_nsz_to_nsp", tempInput.absolutePath, cacheDir.absolutePath)
             logPrintWriter.flush()
 
-            val finalOutDoc = tree.createFile("application/octet-stream", outputName)!!
+            val tempOutput = cacheDir.listFiles()?.firstOrNull { it.name.endsWith(".nsp") }
+                ?: throw FileNotFoundException("No .nsp file found in cache")
+
+            val finalOutDoc = tree.createFile("application/octet-stream", tempOutput.name)!!
             val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
             outStream.write(tempOutput.readBytes())
             outStream.close()
