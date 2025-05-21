@@ -3,6 +3,7 @@ import types
 import builtins
 import warnings
 import traceback
+import os
 
 # Disable input() to prevent EOFError
 builtins.input = lambda *args, **kwargs: None
@@ -81,6 +82,9 @@ def convert_nsz_to_nsp(input_file, output_dir):
         "--out", output_dir,
         input_file
     ]
+    print(f"[DEBUG] sys.argv: {sys.argv}")
+    print(f"[DEBUG] input exists: {os.path.exists(input_file)}")
+
     try:
         nsz.main()
     except Exception as e:
