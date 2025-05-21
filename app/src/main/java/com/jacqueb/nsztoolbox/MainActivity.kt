@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.chaquo.python.Python
+import com.chaquo.python.PyObject
 import com.chaquo.python.android.AndroidPlatform
 import com.jacqueb.nsztoolbox.databinding.ActivityMainBinding
 
@@ -27,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Start Chaquopy
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this))
         }
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent?.action == Intent.ACTION_SEND) {
-            // Wait for folder permission first
+            // Wait for SAF permission first
             startActivityForResult(Intent(), REQUEST_CODE_HANDLE_SEND)
             handleSend(intent)
         }
@@ -102,25 +102,21 @@ class MainActivity : AppCompatActivity() {
             val inputName = DocumentFile.fromSingleUri(this, inputUri)!!.name ?: "game.nsz"
             val tempInput = File(cacheDir, inputName)
             val inputStream = contentResolver.openInputStream(inputUri)!!
+            tempInput.outputStream().use { it.write(inputStream.readBytes()) }
 
-            inputStream.use { input ->
-                tempInput.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            // Prepare Python sys.argv and call nsz.main()
             val py = Python.getInstance()
             val sys = py.getModule("sys")
-            sys["argv"] = listOf("nsz", "-D", tempInput.absolutePath, "--outdir", cacheDir.absolutePath)
+            val pyList = py.getBuiltins().callAttr("list", arrayOf(
+                "nsz", "-D", tempInput.absolutePath, "--outdir", cacheDir.absolutePath
+            ))
+            sys.put("argv", pyList)
 
-            log("Calling NSZ with arguments: ${sys["argv"]}")
             py.getModule("nsz").callAttr("main")
 
-            val outFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
-            val finalOutDoc = tree.createFile("application/octet-stream", outFile.name!!)!!
+            val outputFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
+            val finalOutDoc = tree.createFile("application/octet-stream", outputFile.name!!)!!
             val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
-            outStream.write(outFile.readBytes())
+            outStream.write(outputFile.readBytes())
             outStream.close()
 
             log("Finished decompression to: ${finalOutDoc.uri}")
