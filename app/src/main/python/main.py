@@ -1,12 +1,12 @@
-import types
 import sys
+import types
 import builtins
 import warnings
 
-# Disable input
+# Disable input to avoid crashes in non-interactive terminals
 builtins.input = lambda *args, **kwargs: None
 
-# Create a real dummy module for curses
+# Create fake curses module (as a package)
 curses = types.ModuleType("curses")
 curses.initscr = lambda: None
 curses.endwin = lambda: None
@@ -23,18 +23,21 @@ curses.color_pair = lambda x: 0
 curses.has_colors = lambda: False
 curses.has_key = lambda x: False
 
+# Also create a submodule for 'curses.has_key' to prevent import errors
+curses_has_key = types.ModuleType("curses.has_key")
 sys.modules["curses"] = curses
+sys.modules["curses.has_key"] = curses_has_key
 
-# Suppress DeprecationWarnings
+# Suppress deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# NSZ main
+# Now safely import and run NSZ
 import nsz
 
 def convert_nsz_to_nsp(input_file, output_dir):
     args = [
         input_file,
-        "-D",  # Decompress to NSP
+        "-D",
         "--out", output_dir
     ]
     nsz.main(args)
