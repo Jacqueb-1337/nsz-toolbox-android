@@ -1,6 +1,8 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'com.chaquo.python'
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"           // Kotlin Android plugin
+    id "com.chaquo.python"                     // Chaquopy plugin
+}
 
 android {
     compileSdkVersion 30
@@ -11,6 +13,7 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
+
         ndk {
             abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
         }
@@ -22,14 +25,13 @@ android {
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                           'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                          "proguard-rules.pro"
         }
     }
 
     sourceSets {
         main {
-            // bundle the Chaquopy Python runtime
             assets.srcDirs += files("$buildDir/python/interpreter")
         }
     }
@@ -38,7 +40,6 @@ android {
 python {
     pip {
         install "requests"
-        // pin to the version that Chaquopy already provides as wheels
-        install "zstandard==0.15.2"
+        install "zstandard==0.15.2"  // Pin to Chaquopy’s prebuilt wheel version
     }
 }
