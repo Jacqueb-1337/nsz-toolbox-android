@@ -42,13 +42,7 @@ chaquopy {
     defaultConfig {
         buildPython "python3"
         pip {
-            install "nsz==4.4.1"
-            install "zstandard==0.15.2"
-            install "pycryptodome==3.15.0"
-            install "urllib3<2"
-            install "certifi"
-            install "requests"
-            install "six"
+            install "nsz"
         }
     }
 }
