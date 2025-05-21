@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
-    id "org.jetbrains.kotlin.android"           // Kotlin Android plugin
-    id "com.chaquo.python"                     // Chaquopy plugin
+    id "org.jetbrains.kotlin.android"
+    id "com.chaquo.python"
 }
 
 android {
@@ -40,6 +40,6 @@ android {
 python {
     pip {
         install "requests"
-        install "zstandard==0.15.2"  // Pin to Chaquopy’s prebuilt wheel version
+        install "zstandard==0.15.2"
     }
 }
