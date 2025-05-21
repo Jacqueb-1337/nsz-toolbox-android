@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace "com.jacqueb.nsztoolbox"    // ← add this line
+    namespace "com.jacqueb.nsztoolbox"
     compileSdkVersion 34
 
     defaultConfig {
@@ -16,7 +16,6 @@ android {
         targetSdkVersion 34
         versionCode 1
         versionName "1.0"
-
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
@@ -40,7 +39,6 @@ android {
     }
 }
 
-// The modern DSL for Chaquopy settings
 chaquopy {
     defaultConfig {
         buildPython "python3"
