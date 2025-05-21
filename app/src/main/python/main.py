@@ -2,12 +2,13 @@
 
 import sys
 import types
+import builtins
 import warnings
 
-# Disable input() to avoid EOFError on Android
-__builtins__.input = lambda *args, **kwargs: None
+# Properly override input to avoid EOFError
+builtins.input = lambda *args, **kwargs: None
 
-# Dummy curses module to prevent crash on Android
+# Dummy curses module to prevent crash
 sys.modules["curses"] = types.SimpleNamespace(
     initscr=lambda: None,
     endwin=lambda: None,
