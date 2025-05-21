@@ -20,9 +20,7 @@ android {
 
         python {
             pip {
-                install "nsz"
-                install "zstandard"
-                install "pycryptodome"
+                install "requirements.txt"
             }
         }
     }
