@@ -32,7 +32,7 @@ curses.A_BLINK = 8
 curses.A_DIM = 16
 curses.A_STANDOUT = 32
 
-# Define common key constants
+# Define common key constants (expanded)
 curses.KEY_UP = 259
 curses.KEY_DOWN = 258
 curses.KEY_LEFT = 260
@@ -46,6 +46,7 @@ curses.KEY_NPAGE = 338
 curses.KEY_PPAGE = 339
 curses.KEY_IC = 331
 curses.KEY_EIC = 332
+curses.KEY_EXIT = 27  # <-- Add this to fix the latest error
 
 # Create a fake submodule 'curses.has_key' with expected attributes
 curses_has_key = types.ModuleType("curses.has_key")
