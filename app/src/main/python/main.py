@@ -1,8 +1,10 @@
 # app/src/main/python/main.py
 
+import builtins
+builtins.input = lambda *args, **kwargs: None  # Disable any call to input()
+
 import nsz
 
-__builtins__.input = lambda *args, **kwargs: None
 def convert_nsz_to_nsp(input_file, output_dir):
     args = [
         input_file,
