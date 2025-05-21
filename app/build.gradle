@@ -25,7 +25,8 @@ android {
             pip {
                 install "requests"
                 install "six"
-                // install "pycryptodome==3.20.0"  <-- removed
+                install "pycryptodome==3.20.0"
+                // zstandard handled via JNI at runtime
             }
         }
     }
@@ -45,6 +46,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        dataBinding true    // ← enable data binding so <layout> works
     }
 }
 
