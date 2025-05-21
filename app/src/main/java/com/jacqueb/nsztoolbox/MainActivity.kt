@@ -3,7 +3,6 @@ package com.jacqueb.nsztoolbox
 import android.content.ContentResolver
 import android.content.Intent
 import android.content.SharedPreferences
-import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -16,7 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.github.luben.zstd.ZstdInputStream
-import java.io.File
+import java.io.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,43 +41,40 @@ class MainActivity : AppCompatActivity() {
         deleteToggle = findViewById(R.id.delete_switch)
         logText      = findViewById(R.id.log_text)
 
-        // Restore output‐folder URI if we still have permission
+        // Restore output‐folder URI
         prefs.getString(KEY_OUTPUT_URI, null)?.let { uriStr ->
-            val uri = Uri.parse(uriStr)
-            if (contentResolver.persistedUriPermissions.any { it.uri == uri }) {
-                outputFolderUri = uri
-            }
+            Uri.parse(uriStr).takeIf { uri ->
+                contentResolver.persistedUriPermissions.any { it.uri == uri }
+            }?.also { outputFolderUri = it }
         }
 
-        // Restore delete toggle
+        // Delete‐after‐convert toggle
         deleteToggle.isChecked = prefs.getBoolean(KEY_DELETE_NSZ, false)
         deleteToggle.setOnCheckedChangeListener { _, checked ->
             prefs.edit().putBoolean(KEY_DELETE_NSZ, checked).apply()
         }
 
-        // Set up the SAF folder picker
+        // SAF folder picker
         folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
-            if (treeUri != null) {
-                // Persist permissions long-term
+            treeUri?.let {
                 contentResolver.takePersistableUriPermission(
-                    treeUri,
+                    it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                prefs.edit().putString(KEY_OUTPUT_URI, treeUri.toString()).apply()
-                outputFolderUri = treeUri
+                prefs.edit().putString(KEY_OUTPUT_URI, it.toString()).apply()
+                outputFolderUri = it
                 Toast.makeText(this, "Output folder set.", Toast.LENGTH_SHORT).show()
 
-                // If a share arrived before we had a folder, process it now
-                pendingInputUri?.let {
-                    handleFileUri(it)
+                pendingInputUri?.let { uri ->
                     pendingInputUri = null
+                    handleFileUri(uri)
                 }
-            } else {
+            } ?: run {
                 Toast.makeText(this, "Folder selection canceled.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Handle a SHARE‐NSZ intent
+        // Handle shared NSZ
         if (intent?.action == Intent.ACTION_SEND) {
             intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let { uri ->
                 pendingInputUri = uri
@@ -88,7 +84,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleShare(inputUri: Uri) {
-        // If we don’t yet have an output folder, pick it now
         if (outputFolderUri == null) {
             folderPicker.launch(null)
         } else {
@@ -97,48 +92,94 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleFileUri(inputUri: Uri) {
+        val logBuilder = StringBuilder()
+        fun log(line: String) {
+            logBuilder.append(line).append('\n')
+        }
+
+        // we'll write this at the end
+        var logFileDoc: DocumentFile? = null
+
         try {
-            // 1) Figure out the real display name:
+            log("=== NSZ Toolbox Debug Log ===")
+            log("Input URI: $inputUri")
+            log("Output tree URI: $outputFolderUri")
+
+            // find display name
             val originalName = queryFileName(inputUri)
                 ?: inputUri.lastPathSegment
                 ?: "input.nsz"
+            log("Original filename: $originalName")
 
             val baseName = originalName.substringBeforeLast('.')
             val outputName = "$baseName.nsp"
+            log("Output filename: $outputName")
 
-            // 2) Resolve the tree and create the new file
+            // get tree
             val tree = DocumentFile.fromTreeUri(this, outputFolderUri!!)
                 ?: throw IllegalArgumentException("Invalid output‐folder URI")
+            log("Resolved DocumentFile tree.")
 
-            val outFile = tree.createFile(
-                "application/octet-stream",
-                outputName
-            ) ?: throw Exception("Could not create $outputName")
+            // create debug log file in the tree
+            logFileDoc = tree.createFile("text/plain", "nsz_debug.log")
+            log("Created debug log file: ${logFileDoc?.uri}")
 
-            // 3) Stream‐decompress NSZ → NSP
+            // create output file
+            val outFile = tree.createFile("application/octet-stream", outputName)
+                ?: throw Exception("Could not create $outputName")
+            log("Created output file: ${outFile.uri}")
+
+            // decompress
+            log("Starting decompression...")
             contentResolver.openInputStream(inputUri)!!.use { inp ->
                 contentResolver.openOutputStream(outFile.uri)!!.use { out ->
-                    ZstdInputStream(inp).use { zstd ->
-                        zstd.copyTo(out)
+                    ZstdInputStream(inp).use { zis ->
+                        val copied = zis.copyTo(out)
+                        log("Copied $copied bytes.")
                     }
                 }
             }
+            log("Decompression finished.")
 
-            // 4) Optional delete original
+            // optional delete
             if (deleteToggle.isChecked) {
+                log("Deleting original NSZ...")
                 DocumentsContract.deleteDocument(contentResolver, inputUri)
+                log("Original deleted.")
             }
 
-            logText.text = "Done! Saved as $outputName"
+            log("SUCCESS: wrote $outputName")
+            logText.text = "Done! Check debug log in output folder."
         }
         catch (e: Exception) {
-            logText.text = "Error: ${e.localizedMessage}"
-            Toast.makeText(this, "Failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            log("ERROR: ${e.javaClass.simpleName}: ${e.localizedMessage}")
+            StringWriter().use { sw ->
+                e.printStackTrace(PrintWriter(sw))
+                log(sw.toString())
+            }
+            logText.text = "Failed—see nsz_debug.log"
+            Toast.makeText(this, "Conversion failed, see log.", Toast.LENGTH_LONG).show()
+        }
+        finally {
+            // write out the debug log
+            try {
+                logFileDoc?.let { doc ->
+                    contentResolver.openOutputStream(doc.uri)?.use { fos ->
+                        fos.writer(Charsets.UTF_8).use { w ->
+                            w.write(logBuilder.toString())
+                        }
+                    }
+                }
+            }
+            catch (io: IOException) {
+                // last‐ditch: show toast if log write fails
+                Toast.makeText(this, "Could not write debug log: ${io.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
     /**  
-     * Safely query the user‐visible filename for a content:// Uri  
+     * Query DISPLAY_NAME or fallback to file‐path name  
      */
     private fun queryFileName(uri: Uri): String? {
         if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
@@ -150,9 +191,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
         }
-        // Fallback for file:// Uris
         if (uri.scheme == ContentResolver.SCHEME_FILE) {
-            File(uri.path!!).name.let { return it }
+            return File(uri.path!!).name
         }
         return null
     }
