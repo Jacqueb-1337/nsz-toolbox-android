@@ -21,11 +21,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <!-- catch all file types; you can narrow this to application/octet-stream if you prefer -->
                 <data android:mimeType="*/*"/>
             </intent-filter>
 
         </activity>
-
     </application>
 </manifest>
