@@ -35,8 +35,7 @@ curses.A_REVERSE = 4
 curses.A_BLINK = 8
 curses.A_DIM = 16
 curses.A_STANDOUT = 32
-
-# Full KEY_ constants from official curses documentation
+# KEY constants
 key_names = [
     "KEY_DOWN", "KEY_UP", "KEY_LEFT", "KEY_RIGHT", "KEY_HOME", "KEY_BACKSPACE",
     "KEY_DL", "KEY_IL", "KEY_DC", "KEY_IC", "KEY_EIC", "KEY_CLEAR", "KEY_EOS",
@@ -57,19 +56,16 @@ key_names = [
     "KEY_MAX", "KEY_MIN"
 ] + [f"KEY_F{i}" for i in range(1, 64)]
 
-# Assign dummy integer values to all keys
 for i, key in enumerate(key_names):
     setattr(curses, key, 1000 + i)
 
-# Fake submodule 'curses.has_key' with expected attributes
+# Fake submodule 'curses.has_key'
 curses_has_key = types.ModuleType("curses.has_key")
 curses_has_key._capability_names = {}
-
-# Register mocks
 sys.modules["curses"] = curses
 sys.modules["curses.has_key"] = curses_has_key
 
-# Suppress warnings
+# Suppress deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Import and run NSZ
@@ -77,10 +73,7 @@ import nsz
 
 def convert_nsz_to_nsp(input_file, output_dir):
     sys.argv = [
-        "nsz",  # fake argv[0]
-        "-D",
-        "--out", output_dir,
-        input_file
+        "nsz", "-D", "--extract", "--verify", "--out", output_dir, input_file
     ]
     print(f"[DEBUG] sys.argv: {sys.argv}")
     print(f"[DEBUG] input exists: {os.path.exists(input_file)}")
