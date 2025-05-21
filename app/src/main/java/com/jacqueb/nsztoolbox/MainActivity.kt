@@ -7,8 +7,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.jacqueb.nsztoolbox.databinding.ActivityMainBinding
-import java.io.OutputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,16 +26,19 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Wire up the folder‐picker button
+        // Start Chaquopy if it hasn't been initialized
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(this))
+        }
+
         binding.btnChooseFolder.setOnClickListener {
             launchFolderPicker()
         }
 
-        // If the user shared an NSZ when launching, handle it
         if (intent?.action == Intent.ACTION_SEND) {
-            // delay actual handling until after SAF permission is granted
+            // Wait for folder permission first
             startActivityForResult(Intent(), REQUEST_CODE_HANDLE_SEND)
-            handleSend(intent) 
+            handleSend(intent)
         }
     }
 
@@ -81,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Prepare debug log
         val tree = DocumentFile.fromTreeUri(this, outputTreeUri!!)!!
         val logFile = tree.createFile("text/plain", "nsz_debug.log.txt")
         val logStream = contentResolver.openOutputStream(logFile!!.uri)!!
@@ -95,21 +98,24 @@ class MainActivity : AppCompatActivity() {
         log("Output tree URI: $outputTreeUri")
 
         try {
-            // Create output NSP file
             val inputName = DocumentFile.fromSingleUri(this, inputUri)!!.name ?: "game.nsz"
-            val outDoc = tree.createFile(
-                "application/octet-stream",
-                inputName.replace(".nsz", ".nsp")
-            )!!
-            val outStream = contentResolver.openOutputStream(outDoc.uri)!!
+            val tempInput = File(cacheDir, inputName)
+            val inputStream = contentResolver.openInputStream(inputUri)!!
+            tempInput.outputStream().use { it.write(inputStream.readBytes()) }
 
-            log("Starting decompression...")
-            // TODO: your actual NSZ→NSP logic here (Py, JNI, etc.)
-            // e.g. Python.run(...) or Zstd.decompress(...)
-            log("Finished decompression to: ${outDoc.uri}")
+            val outputFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
 
+            val py = Python.getInstance()
+            val pyObj = py.getModule("main")
+            pyObj.callAttr("convert_nsz_to_nsp", tempInput.absolutePath, outputFile.absolutePath)
+
+            val finalOutDoc = tree.createFile("application/octet-stream", outputFile.name!!)!!
+            val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
+            outStream.write(outputFile.readBytes())
             outStream.close()
-            Toast.makeText(this, "Done: ${outDoc.name}", Toast.LENGTH_SHORT).show()
+
+            log("Finished decompression to: ${finalOutDoc.uri}")
+            Toast.makeText(this, "Done: ${finalOutDoc.name}", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             log("Error: ${e.message}")
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
