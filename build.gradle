@@ -1,1 +1,20 @@
-//empty
+// File: build.gradle
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Android Gradle plugin
+        classpath 'com.android.tools.build:gradle:8.0.2'
+        // Chaquopy plugin
+        classpath 'com.chaquo.python:gradle:14.0.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
