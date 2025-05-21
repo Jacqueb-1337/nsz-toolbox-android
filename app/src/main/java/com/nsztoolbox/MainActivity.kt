@@ -1,16 +1,17 @@
-package com.nsztoolbox
+package com.example.nsztoolbox
 
-import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
-import android.widget.*
+import android.widget.Switch
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+import com.github.luben.zstd.ZstdInputStream
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
@@ -41,12 +42,9 @@ class MainActivity : AppCompatActivity() {
         deleteToggle = findViewById(R.id.delete_switch)
         logText = findViewById(R.id.log_text)
 
-        val folder = prefs.getString("output_folder", null)
-        if (folder == null) {
-            folderPicker.launch(null)
-        } else {
-            outputFolderUri = Uri.parse(folder)
-        }
+        prefs.getString("output_folder", null)?.let {
+            outputFolderUri = Uri.parse(it)
+        } ?: folderPicker.launch(null)
 
         deleteToggle.isChecked = prefs.getBoolean("delete_nsz", false)
         deleteToggle.setOnCheckedChangeListener { _, isChecked ->
@@ -54,28 +52,38 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent?.action == Intent.ACTION_SEND) {
-            val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-            if (uri != null) {
-                processNSZ(uri)
+            (intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM))?.let {
+                processNSZ(it)
             }
         }
     }
 
-    private fun processNSZ(uri: Uri) {
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(this))
-        }
-
-        val py = Python.getInstance()
-        val script = py.getModule("nsz_script")
+    private fun processNSZ(inputUri: Uri) {
         try {
-            val result = script.callAttr("decompress", contentResolver.openInputStream(uri), outputFolderUri.toString())
-            logText.text = "Done!\n$result"
+            val fileName = inputUri.lastPathSegment ?: "input.nsz"
+            val outputName = fileName.substringBeforeLast('.') + ".nsp"
 
-            if (prefs.getBoolean("delete_nsz", false)) {
-                DocumentsContract.deleteDocument(contentResolver, uri)
+            // Create the output document via SAF
+            val outUri = DocumentsContract.createDocument(
+                contentResolver,
+                outputFolderUri,
+                "application/octet-stream",
+                outputName
+            ) ?: throw Exception("Cannot create output file")
+
+            contentResolver.openOutputStream(outUri)?.use { out ->
+                contentResolver.openInputStream(inputUri)?.use { inp ->
+                    ZstdInputStream(inp).use { zstdIn ->
+                        zstdIn.copyTo(out)
+                    }
+                }
             }
 
+            if (deleteToggle.isChecked) {
+                DocumentsContract.deleteDocument(contentResolver, inputUri)
+            }
+
+            logText.text = "Done! Saved as $outputName"
         } catch (e: Exception) {
             logText.text = "Error: ${e.localizedMessage}"
         }
