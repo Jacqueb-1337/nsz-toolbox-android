@@ -121,20 +121,13 @@ class MainActivity : AppCompatActivity() {
             val tempOutput = File(cacheDir, outputName)
 
             val py = Python.getInstance()
-            val builtins = py.getBuiltins()
             val sys = py.getModule("sys")
             sys["stdout"] = PyObject.fromJava(logPrintWriter)
             sys["stderr"] = PyObject.fromJava(logPrintWriter)
             logPrintWriter.flush()
 
-            val argv: PyObject = builtins.callAttr("list", arrayOf(
-                "nsz", "-D", "--verify",
-                "-o", tempOutput.absolutePath,
-                tempInput.absolutePath
-            ))
-
-            sys["argv"] = argv
-            py.getModule("nsz.__main__").callAttr("main")
+            // NEW: Call our patched main.py function instead of NSZ directly
+            py.getModule("main").callAttr("convert_nsz_to_nsp", tempInput.absolutePath, cacheDir.absolutePath)
             logPrintWriter.flush()
 
             val finalOutDoc = tree.createFile("application/octet-stream", outputName)!!
