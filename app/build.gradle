@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.nsztoolbox'
+    namespace 'com.jacqueb.nsztoolbox'
     compileSdk 34
 
     defaultConfig {
@@ -20,8 +20,8 @@ android {
 
         python {
             buildPython "python3"
-            pip {
-                requirements "src/main/python/requirements.txt"
+               pip {
+                   requirements = "src/main/python/requirements.txt"
             }
         }
     }
