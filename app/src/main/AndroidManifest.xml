@@ -10,10 +10,21 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
+            <!-- Home-screen launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Receive a shared file -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <!-- catch all file types; you can narrow this to application/octet-stream if you prefer -->
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+
         </activity>
 
     </application>
