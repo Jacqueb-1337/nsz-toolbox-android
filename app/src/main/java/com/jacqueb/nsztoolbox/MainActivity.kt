@@ -1,5 +1,7 @@
 package com.example.nsztoolbox
 
+import android.widget.Button
+import com.jacqueb.nsztoolbox.R
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
