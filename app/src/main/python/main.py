@@ -1,4 +1,11 @@
-import nsz.__main__
+# app/src/main/python/main.py
 
-def main(argv):
-    return nsz.__main__.main(argv)
+import nsz
+
+def convert_nsz_to_nsp(input_file, output_dir):
+    args = [
+        input_file,
+        "-D",  # Decompress to NSP
+        "--out", output_dir
+    ]
+    nsz.main(args)
