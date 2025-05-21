@@ -3,11 +3,13 @@ import types
 import builtins
 import warnings
 
-# Disable input to avoid terminal crashes
+# Disable input() to prevent EOFError
 builtins.input = lambda *args, **kwargs: None
 
-# Create a dummy 'curses' module
+# Create mock curses module
 curses = types.ModuleType("curses")
+
+# Stub functions
 curses.initscr = lambda: None
 curses.endwin = lambda: None
 curses.wrapper = lambda func, *args, **kwargs: func(*args, **kwargs)
@@ -23,7 +25,7 @@ curses.color_pair = lambda x: 0
 curses.has_colors = lambda: False
 curses.has_key = lambda x: False
 
-# Define common attributes used in curses applications
+# Attributes
 curses.A_NORMAL = 0
 curses.A_BOLD = 1
 curses.A_UNDERLINE = 2
@@ -32,114 +34,46 @@ curses.A_BLINK = 8
 curses.A_DIM = 16
 curses.A_STANDOUT = 32
 
-# Define common key constants
-curses.KEY_DOWN = 1000
-curses.KEY_UP = 1001
-curses.KEY_LEFT = 1002
-curses.KEY_RIGHT = 1003
-curses.KEY_HOME = 1004
-curses.KEY_BACKSPACE = 1005
-curses.KEY_F0 = 1006
-curses.KEY_DL = 1007
-curses.KEY_IL = 1008
-curses.KEY_DC = 1009
-curses.KEY_IC = 1010
-curses.KEY_EIC = 1011
-curses.KEY_CLEAR = 1012
-curses.KEY_EOS = 1013
-curses.KEY_EOL = 1014
-curses.KEY_SF = 1015
-curses.KEY_SR = 1016
-curses.KEY_NPAGE = 1017
-curses.KEY_PPAGE = 1018
-curses.KEY_STAB = 1019
-curses.KEY_CTAB = 1020
-curses.KEY_CATAB = 1021
-curses.KEY_ENTER = 1022
-curses.KEY_SRESET = 1023
-curses.KEY_RESET = 1024
-curses.KEY_PRINT = 1025
-curses.KEY_LL = 1026
-curses.KEY_A1 = 1027
-curses.KEY_A3 = 1028
-curses.KEY_B2 = 1029
-curses.KEY_C1 = 1030
-curses.KEY_C3 = 1031
-curses.KEY_BTAB = 1032
-curses.KEY_BEG = 1033
-curses.KEY_CANCEL = 1034
-curses.KEY_CLOSE = 1035
-curses.KEY_COMMAND = 1036
-curses.KEY_COPY = 1037
-curses.KEY_CREATE = 1038
-curses.KEY_END = 1039
-curses.KEY_EXIT = 1040
-curses.KEY_FIND = 1041
-curses.KEY_HELP = 1042
-curses.KEY_MARK = 1043
-curses.KEY_MESSAGE = 1044
-curses.KEY_MOVE = 1045
-curses.KEY_NEXT = 1046
-curses.KEY_OPEN = 1047
-curses.KEY_OPTIONS = 1048
-curses.KEY_PREVIOUS = 1049
-curses.KEY_REDO = 1050
-curses.KEY_REFERENCE = 1051
-curses.KEY_REFRESH = 1052
-curses.KEY_REPLACE = 1053
-curses.KEY_RESTART = 1054
-curses.KEY_RESUME = 1055
-curses.KEY_SAVE = 1056
-curses.KEY_SBEG = 1057
-curses.KEY_SCANCEL = 1058
-curses.KEY_SCOMMAND = 1059
-curses.KEY_SCOPY = 1060
-curses.KEY_SCREATE = 1061
-curses.KEY_SDC = 1062
-curses.KEY_SDL = 1063
-curses.KEY_SELECT = 1064
-curses.KEY_SEND = 1065
-curses.KEY_SEOL = 1066
-curses.KEY_SEXIT = 1067
-curses.KEY_SFIND = 1068
-curses.KEY_SHELP = 1069
-curses.KEY_SHOME = 1070
-curses.KEY_SIC = 1071
-curses.KEY_SLEFT = 1072
-curses.KEY_SMESSAGE = 1073
-curses.KEY_SMOVE = 1074
-curses.KEY_SNEXT = 1075
-curses.KEY_SOPTIONS = 1076
-curses.KEY_SPREVIOUS = 1077
-curses.KEY_SPRINT = 1078
-curses.KEY_SREDO = 1079
-curses.KEY_SREPLACE = 1080
-curses.KEY_SRESET = 1081
-curses.KEY_SRIGHT = 1082
-curses.KEY_SRSUME = 1083
-curses.KEY_SSAVE = 1084
-curses.KEY_SSUSPEND = 1085
-curses.KEY_SUNDO = 1086
-curses.KEY_SUSPEND = 1087
-curses.KEY_UNDO = 1088
-curses.KEY_MOUSE = 1089
-curses.KEY_RESIZE = 1090
-curses.KEY_EVENT = 1091
-curses.KEY_MAX = 1092
-curses.KEY_MIN = 1093
+# Full KEY_ constants from official curses documentation
+key_names = [
+    "KEY_DOWN", "KEY_UP", "KEY_LEFT", "KEY_RIGHT", "KEY_HOME", "KEY_BACKSPACE",
+    "KEY_DL", "KEY_IL", "KEY_DC", "KEY_IC", "KEY_EIC", "KEY_CLEAR", "KEY_EOS",
+    "KEY_EOL", "KEY_SF", "KEY_SR", "KEY_NPAGE", "KEY_PPAGE", "KEY_STAB", "KEY_CTAB",
+    "KEY_CATAB", "KEY_ENTER", "KEY_SRESET", "KEY_RESET", "KEY_PRINT", "KEY_LL",
+    "KEY_A1", "KEY_A3", "KEY_B2", "KEY_C1", "KEY_C3", "KEY_BTAB", "KEY_BEG",
+    "KEY_CANCEL", "KEY_CLOSE", "KEY_COMMAND", "KEY_COPY", "KEY_CREATE", "KEY_END",
+    "KEY_EXIT", "KEY_FIND", "KEY_HELP", "KEY_MARK", "KEY_MESSAGE", "KEY_MOVE",
+    "KEY_NEXT", "KEY_OPEN", "KEY_OPTIONS", "KEY_PREVIOUS", "KEY_REDO",
+    "KEY_REFERENCE", "KEY_REFRESH", "KEY_REPLACE", "KEY_RESTART", "KEY_RESUME",
+    "KEY_SAVE", "KEY_SBEG", "KEY_SCANCEL", "KEY_SCOMMAND", "KEY_SCOPY",
+    "KEY_SCREATE", "KEY_SDC", "KEY_SDL", "KEY_SELECT", "KEY_SEND", "KEY_SEOL",
+    "KEY_SEXIT", "KEY_SFIND", "KEY_SHELP", "KEY_SHOME", "KEY_SIC", "KEY_SLEFT",
+    "KEY_SMESSAGE", "KEY_SMOVE", "KEY_SNEXT", "KEY_SOPTIONS", "KEY_SPREVIOUS",
+    "KEY_SPRINT", "KEY_SREDO", "KEY_SREPLACE", "KEY_SRESET", "KEY_SRIGHT",
+    "KEY_SRSUME", "KEY_SSAVE", "KEY_SSUSPEND", "KEY_STAB", "KEY_SUNDO",
+    "KEY_SUSPEND", "KEY_UNDO", "KEY_MOUSE", "KEY_RESIZE", "KEY_EVENT",
+    "KEY_MAX", "KEY_MIN"
+]
 
-# Create a fake submodule 'curses.has_key' with expected attributes
+# Add KEY_F1 to KEY_F63
+key_names += [f"KEY_F{i}" for i in range(1, 64)]
+
+# Assign dummy integer values to all keys
+for i, key in enumerate(key_names):
+    setattr(curses, key, 1000 + i)
+
+# Fake submodule 'curses.has_key' with expected attributes
 curses_has_key = types.ModuleType("curses.has_key")
 curses_has_key._capability_names = {}
 
-# Register both modules
+# Register mocks
 sys.modules["curses"] = curses
 sys.modules["curses.has_key"] = curses_has_key
 
-# Suppress deprecation warnings
+# Suppress warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# Now safely import and run NSZ
+# Import and run NSZ
 import nsz
 
 def convert_nsz_to_nsp(input_file, output_dir):
