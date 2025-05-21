@@ -126,14 +126,14 @@ class MainActivity : AppCompatActivity() {
 
             log("Memory used before NSZ: ${Runtime.getRuntime().totalMemory() / 1024} KB")
             py.getModule("main").callAttr("convert_nsz_to_nsp", tempInput.absolutePath, cacheDir.absolutePath)
-            logPrintWriter.flush()
             log("Memory used after NSZ: ${Runtime.getRuntime().totalMemory() / 1024} KB")
 
             val fileList = cacheDir.listFiles()?.joinToString("\n") { it.name } ?: "empty"
             log("Cache contents after NSZ run:\n$fileList")
 
-            val tempOutput = cacheDir.listFiles()?.firstOrNull { it.name.endsWith(".nsp") }
-                ?: throw FileNotFoundException("No .nsp file found in cache")
+            val tempOutput = cacheDir.listFiles()?.firstOrNull {
+                it.name.endsWith(".nsp") || it.name.endsWith(".ncz") || it.name.endsWith(".nca")
+            } ?: throw FileNotFoundException("No output file (.nsp/.ncz/.nca) found in cache")
 
             val finalOutDoc = tree.createFile("application/octet-stream", tempOutput.name)!!
             val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
