@@ -1,5 +1,3 @@
-// settings.gradle
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -8,11 +6,10 @@ pluginManagement {
         maven { url "https://chaquo.com/maven" }
     }
     plugins {
-        id "com.android.application" version "8.0.2"
+        id "com.android.application"      version "8.0.2"
         id "org.jetbrains.kotlin.android" version "1.8.21"
-        id "com.chaquo.python" version "16.1.0"
+        id "com.chaquo.python"            version "16.1.0"
     }
 }
-
 rootProject.name = "nsz-toolbox-android"
 include(":app")
