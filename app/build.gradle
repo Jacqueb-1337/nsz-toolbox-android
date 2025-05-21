@@ -1,6 +1,9 @@
+// app/build.gradle
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    // keep using the Chaquopy plugin, now at v16.1.0
     id 'com.chaquo.python'
 }
 
