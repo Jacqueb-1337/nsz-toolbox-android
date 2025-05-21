@@ -3,14 +3,15 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        // Chaquopy’s Maven repository
         maven { url "https://chaquo.com/maven" }
     }
     plugins {
-        // Declare the Chaquopy plugin here so module builds can apply it without a classpath block
-        id "com.chaquo.python" version "14.0.2"
-        // Also declare Kotlin Android plugin
+        // Android application plugin
+        id "com.android.application" version "7.4.0"
+        // Kotlin Android support
         id "org.jetbrains.kotlin.android" version "1.8.21"
+        // Chaquopy Python support
+        id "com.chaquo.python" version "14.0.2"
     }
 }
 
