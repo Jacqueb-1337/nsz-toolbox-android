@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.jacqueb.nsztoolbox'
+    namespace 'com.example.nsztoolbox'
     compileSdk 34
 
     defaultConfig {
@@ -20,8 +20,11 @@ android {
 
         python {
             buildPython "python3"
-               pip {
-                   requirements = "src/main/python/requirements.txt"
+            pip {
+                install "requests"
+                install "zstandard==0.22.0"
+                install "pycryptodome==3.20.0"
+                install "six"
             }
         }
     }
