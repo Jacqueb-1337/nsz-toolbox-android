@@ -1,2 +1,18 @@
-rootProject.name = "NSZToolbox"
+// Top-level Settings for NSZ-Toolbox-Android
+
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+plugins {
+    // Upgrade to Chaquopy 16.1.0 to get prebuilt wheels for PyCryptodome
+    id("com.chaquo.python") version "16.1.0" apply false
+}
+
+// (Other modules can be included here as before)
+rootProject.name = "nsz-toolbox-android"
 include(":app")
