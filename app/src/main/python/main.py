@@ -1,29 +1,29 @@
-# app/src/main/python/main.py
-
-import sys
 import types
+import sys
 import builtins
 import warnings
 
-# Properly override input to avoid EOFError
+# Disable input
 builtins.input = lambda *args, **kwargs: None
 
-# Dummy curses module to prevent crash
-sys.modules["curses"] = types.SimpleNamespace(
-    initscr=lambda: None,
-    endwin=lambda: None,
-    wrapper=lambda func, *args, **kwargs: func(*args, **kwargs),
-    newwin=lambda *a, **kw: None,
-    noecho=lambda: None,
-    cbreak=lambda: None,
-    echo=lambda: None,
-    nocbreak=lambda: None,
-    curs_set=lambda x: None,
-    start_color=lambda: None,
-    init_pair=lambda a, b, c: None,
-    color_pair=lambda x: 0,
-    has_colors=lambda: False,
-)
+# Create a real dummy module for curses
+curses = types.ModuleType("curses")
+curses.initscr = lambda: None
+curses.endwin = lambda: None
+curses.wrapper = lambda func, *args, **kwargs: func(*args, **kwargs)
+curses.newwin = lambda *a, **kw: None
+curses.noecho = lambda: None
+curses.cbreak = lambda: None
+curses.echo = lambda: None
+curses.nocbreak = lambda: None
+curses.curs_set = lambda x: None
+curses.start_color = lambda: None
+curses.init_pair = lambda a, b, c: None
+curses.color_pair = lambda x: 0
+curses.has_colors = lambda: False
+curses.has_key = lambda x: False
+
+sys.modules["curses"] = curses
 
 # Suppress DeprecationWarnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
