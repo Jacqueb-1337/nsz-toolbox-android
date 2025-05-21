@@ -1,8 +1,3 @@
-// app/build.gradle
-afterEvaluate {
-    println "Chaquopy plugin applied: " + com.chaquo.python.gradle.Plugin.class.package.implementationVersion
-}
-
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
@@ -43,7 +38,6 @@ android {
     }
 }
 
-// ← This block is mandatory for Chaquopy to see your Python deps
 chaquopy {
     defaultConfig {
         buildPython "python3"
