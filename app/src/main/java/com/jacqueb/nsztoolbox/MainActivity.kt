@@ -89,6 +89,7 @@ class MainActivity : AppCompatActivity() {
 
         fun log(msg: String) {
             logPrintWriter.println(msg)
+            logPrintWriter.flush()
             Log.d("NSZToolbox", msg)
         }
 
@@ -106,6 +107,7 @@ class MainActivity : AppCompatActivity() {
             val sys = py.getModule("sys")
             sys["stdout"] = PyObject.fromJava(logPrintWriter)
             sys["stderr"] = PyObject.fromJava(logPrintWriter)
+            logPrintWriter.flush()
 
             val argv: PyObject = builtins.callAttr("list", arrayOf(
                 "nsz", "-D", "--verify",
@@ -115,6 +117,7 @@ class MainActivity : AppCompatActivity() {
 
             sys["argv"] = argv
             py.getModule("nsz.__main__").callAttr("main")
+            logPrintWriter.flush()
 
             val finalOutDoc = tree.createFile("application/octet-stream", outputName)!!
             val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
@@ -127,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             log("Error: ${e.message}")
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         } finally {
+            logPrintWriter.flush()
             logPrintWriter.close()
             logWriter.close()
             logStream.close()
