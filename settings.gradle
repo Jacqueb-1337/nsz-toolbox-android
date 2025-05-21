@@ -14,9 +14,3 @@ pluginManagement {
 
 rootProject.name = "nsz-toolbox-android"
 include(":app")
-
-// If you really need to log the plugin version, do it *after* the block:
-println ">>> Chaquopy plugin version: " +
-    pluginManagement
-      .plugins["com.chaquo.python"]
-      .version
