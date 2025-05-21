@@ -1,4 +1,4 @@
-package com.example.nsztoolbox
+package com.jacqueb.nsztoolbox
 
 import android.widget.Button
 import com.jacqueb.nsztoolbox.R
