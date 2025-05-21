@@ -77,9 +77,10 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import nsz
 
 def convert_nsz_to_nsp(input_file, output_dir):
-    args = [
-        input_file,
+    sys.argv = [
+        "nsz",  # fake argv[0]
         "-D",
-        "--out", output_dir
+        "--out", output_dir,
+        input_file
     ]
-    nsz.main(args)
+    nsz.main()
