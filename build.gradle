@@ -1,4 +1,5 @@
-// File: build.gradle
+// File: build.gradle (project root)
+
 buildscript {
     repositories {
         google()
@@ -16,5 +17,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url "https://chaquo.com/maven" }
     }
 }
