@@ -1,4 +1,7 @@
 // app/build.gradle
+afterEvaluate {
+    println "Chaquopy plugin applied: " + com.chaquo.python.gradle.Plugin.class.package.implementationVersion
+}
 
 plugins {
     id "com.android.application"
@@ -59,5 +62,3 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     implementation "com.github.luben:zstd-jni:1.5.2-4"
 }
-
-println "Chaquopy plugin applied: " + com.chaquo.python.gradle.Plugin.class.package.implementationVersion
