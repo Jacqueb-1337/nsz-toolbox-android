@@ -1,2 +1,18 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        // Chaquopy’s Maven repository
+        maven { url "https://chaquo.com/maven" }
+    }
+    plugins {
+        // Declare the Chaquopy plugin here so module builds can apply it without a classpath block
+        id "com.chaquo.python" version "14.0.2"
+        // Also declare Kotlin Android plugin
+        id "org.jetbrains.kotlin.android" version "1.8.21"
+    }
+}
+
 rootProject.name = "NSZToolbox"
-include ':app'
+include(":app")
