@@ -4,23 +4,21 @@ plugins {
 }
 
 android {
+    namespace 'com.example.nsztoolbox'
     compileSdk 34
-    namespace 'com.nsztoolbox'
 
     defaultConfig {
-        applicationId "com.nsztoolbox"
+        applicationId "com.example.nsztoolbox"
         minSdk 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a"
-        }
-
         python {
+            buildPython "python3"
             pip {
-                install "requirements.txt"
+                install "six"
+                install "requests"
             }
         }
     }
@@ -32,6 +30,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
     buildFeatures {
         viewBinding true
     }
@@ -39,5 +42,6 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.chaquo.python:gradle:14.0.2'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'com.google.android.material:material:1.11.0'
 }
