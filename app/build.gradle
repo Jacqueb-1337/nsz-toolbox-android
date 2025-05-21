@@ -5,7 +5,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.chaquo.python'
 
 android {
-    namespace 'com.example.nsztoolbox'
+    namespace 'com.jacqueb.nsztoolbox'
     compileSdkVersion 34
 
     defaultConfig {
