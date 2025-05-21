@@ -1,11 +1,17 @@
+// build.gradle (root of your repo)
+
 buildscript {
+    ext.kotlin_version = '1.8.21'
     repositories {
         google()
         mavenCentral()
+        // Chaquopy’s plugin + prebuilt wheels
+        maven { url 'https://chaquo.com/maven' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath 'com.chaquo.python:gradle:14.0.2'
+        classpath "com.android.tools.build:gradle:7.4.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.chaquo.python:gradle:14.0.2"
     }
 }
 
@@ -13,5 +19,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://chaquo.com/maven' }
     }
 }
