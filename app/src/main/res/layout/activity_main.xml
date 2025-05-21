@@ -1,28 +1,30 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Switch
-        android:id="@+id/delete_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete NSZ after conversion?" />
+    <data>
+        <!-- no data binding variables needed here -->
+    </data>
 
-    <!-- ← INSERT YOUR “Choose Folder” BUTTON HERE -->
-    <Button
-        android:id="@+id/btnChooseFolder"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Choose Output Folder" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/log_text"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingTop="10dp"
-        android:text="Waiting for input..."
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-</LinearLayout>
+        <!-- Choose (or change) your output folder -->
+        <Button
+            android:id="@+id/btnChooseFolder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose Output Folder" />
+
+        <!-- Status / instructions -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Share an NSZ via system Share → NSZ Toolbox" />
+
+    </LinearLayout>
+</layout>
