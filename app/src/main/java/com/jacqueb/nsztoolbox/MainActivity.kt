@@ -1,6 +1,5 @@
 package com.jacqueb.nsztoolbox
 
-import java.io.File
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -9,9 +8,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.chaquo.python.Python
-import com.chaquo.python.PyObject
 import com.chaquo.python.android.AndroidPlatform
 import com.jacqueb.nsztoolbox.databinding.ActivityMainBinding
+import java.io.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         if (intent?.action == Intent.ACTION_SEND) {
             startActivityForResult(Intent(), REQUEST_CODE_HANDLE_SEND)
-            handleSend(intent)
+            // The actual logic will be retried in onActivityResult
         }
     }
 
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             REQUEST_CODE_PICK_OUTPUT -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    data?.data?.also { uri ->
+                    data?.data?.let { uri ->
                         outputTreeUri = uri
                         contentResolver.takePersistableUriPermission(
                             uri,
@@ -67,9 +66,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             REQUEST_CODE_HANDLE_SEND -> {
-                if (intent?.action == Intent.ACTION_SEND) {
-                    handleSend(intent)
-                }
+                intent?.let { handleSend(it) }
             }
         }
     }
@@ -80,62 +77,91 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "No file to process", Toast.LENGTH_SHORT).show()
             return
         }
+
         if (outputTreeUri == null) {
             Toast.makeText(this, "Please choose an output folder first", Toast.LENGTH_LONG).show()
             return
         }
 
-        val tree = DocumentFile.fromTreeUri(this, outputTreeUri!!)!!
-        val logFile = tree.createFile("text/plain", "nsz_debug.log.txt")
-        val logStream = contentResolver.openOutputStream(logFile!!.uri)!!
-
-        fun log(msg: String) {
-            logStream.write((msg + "\n").toByteArray())
+        val tree = DocumentFile.fromTreeUri(this, outputTreeUri!!)
+        if (tree == null || !tree.isDirectory) {
+            Toast.makeText(this, "Invalid output folder", Toast.LENGTH_LONG).show()
+            return
         }
 
-        log("=== NSZ Toolbox Debug Log ===")
-        log("Input URI: $inputUri")
-        log("Output tree URI: $outputTreeUri")
-
         try {
-            val inputName = DocumentFile.fromSingleUri(this, inputUri)!!.name ?: "game.nsz"
-            val tempInput = File(cacheDir, inputName)
-            val inputStream = contentResolver.openInputStream(inputUri)!!
-            tempInput.outputStream().use { it.write(inputStream.readBytes()) }
+            val inputName = DocumentFile.fromSingleUri(this, inputUri)?.name ?: "game.nsz"
+            val baseName = inputName.removeSuffix(".nsz")
 
-            val outputFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
+            // Log files
+            val logFile = tree.createFile("text/plain", "nsz_debug.log.txt")
+            val outLogFile = tree.createFile("text/plain", "nsz_output.log.txt")
+
+            val logStream = contentResolver.openOutputStream(logFile!!.uri)!!
+            val outLogStream = contentResolver.openOutputStream(outLogFile!!.uri)!!
+
+            val logWriter = BufferedWriter(OutputStreamWriter(logStream))
+            val outWriter = BufferedWriter(OutputStreamWriter(outLogStream))
+
+            fun log(msg: String) {
+                logWriter.write("$msg\n")
+                logWriter.flush()
+            }
+
+            // Redirect stdout and stderr
+            System.setOut(PrintStream(object : OutputStream() {
+                override fun write(b: Int) { outWriter.write(b.toChar().toString()) }
+                override fun flush() { outWriter.flush() }
+            }))
+            System.setErr(System.out)
+
+            log("=== NSZ Toolbox Debug Log ===")
+            log("Input URI: $inputUri")
+            log("Output URI (folder): $outputTreeUri")
+
+            // Copy input NSZ to local cache
+            val inputFile = File(cacheDir, inputName)
+            contentResolver.openInputStream(inputUri)!!.use { input ->
+                inputFile.outputStream().use { output -> input.copyTo(output) }
+            }
+
+            val outputFile = File(cacheDir, "$baseName.nsp")
+
+            // Call NSZ CLI
             val py = Python.getInstance()
-            val sys = py.getModule("sys")
-            val io = py.getModule("io")
+            val result = py.getModule("nsz").callAttr("main", listOf(
+                "--decompress",
+                "--overwrite",
+                inputFile.absolutePath,
+                "--output", outputFile.absolutePath
+            ))
 
-            val outCapture = io.callAttr("StringIO")
-            val errCapture = io.callAttr("StringIO")
-            sys["stdout"] = outCapture
-            sys["stderr"] = errCapture
+            log("NSZ command completed.")
+            log("Output file path: ${outputFile.absolutePath}")
+            log("NSZ returned: $result")
 
-            val args = listOf("nsz", "-D", "--decompress", tempInput.absolutePath, "-o", outputFile.absolutePath)
-            sys["argv"] = PyObject.fromJava(args)
+            if (!outputFile.exists()) {
+                log("NSZ did not produce an output file.")
+                Toast.makeText(this, "Conversion failed", Toast.LENGTH_LONG).show()
+            } else {
+                val finalOutDoc = tree.createFile("application/octet-stream", "$baseName.nsp")
+                contentResolver.openOutputStream(finalOutDoc!!.uri)!!.use { finalOut ->
+                    outputFile.inputStream().use { input -> input.copyTo(finalOut) }
+                }
+                log("Successfully saved to: ${finalOutDoc.uri}")
+                Toast.makeText(this, "Done: ${finalOutDoc.name}", Toast.LENGTH_SHORT).show()
+            }
 
-            py.getModule("nsz.__main__").callAttr("main")
-
-            val finalOutDoc = tree.createFile("application/octet-stream", outputFile.name!!)!!
-            val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
-            outStream.write(outputFile.readBytes())
-            outStream.close()
-
-            val outputLog = tree.createFile("text/plain", "nsz_output.log.txt")
-            val outputStream = contentResolver.openOutputStream(outputLog!!.uri)!!
-            outputStream.write(outCapture?.callAttr("getvalue")?.toString()?.toByteArray() ?: byteArrayOf())
-            outputStream.write(errCapture?.callAttr("getvalue")?.toString()?.toByteArray() ?: byteArrayOf())
-            outputStream.close()
-
-            log("Finished decompression to: ${finalOutDoc.uri}")
-            Toast.makeText(this, "Done: ${finalOutDoc.name}", Toast.LENGTH_SHORT).show()
+            logWriter.close()
+            outWriter.close()
         } catch (e: Exception) {
-            log("Error: ${e.message}")
+            try {
+                val fallbackLog = tree.createFile("text/plain", "nsz_crash.log.txt")
+                val crashWriter = BufferedWriter(OutputStreamWriter(contentResolver.openOutputStream(fallbackLog!!.uri)!!))
+                crashWriter.write("Crash: ${e.message}\n${Log.getStackTraceString(e)}")
+                crashWriter.close()
+            } catch (_: Exception) {}
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-        } finally {
-            logStream.close()
         }
     }
 }
