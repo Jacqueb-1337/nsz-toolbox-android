@@ -1,11 +1,9 @@
 // app/build.gradle
 
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    // keep using the Chaquopy plugin, now at v16.1.0
-    id 'com.chaquo.python'
-}
+// Use the legacy 'apply plugin' syntax so Chaquopy loads *after* the Android plugin
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.chaquo.python'
 
 android {
     namespace 'com.jacqueb.nsztoolbox'
@@ -22,14 +20,13 @@ android {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
 
+        // Your Python dependencies
         python {
-            // Use the system Python3
             buildPython "python3"
             pip {
                 install "requests"
                 install "six"
                 install "pycryptodome==3.20.0"
-                // zstandard via JNI; no pip install for zstandard
             }
         }
     }
