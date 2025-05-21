@@ -1,13 +1,16 @@
+// build.gradle (project root)
+
 buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://chaquo.com/maven" }
+        maven { url "https://chaquo.com/maven" }    // your Chaquopy Maven repo
     }
     dependencies {
         classpath "com.android.tools.build:gradle:8.0.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21"
-        classpath "com.chaquo.python:gradle:14.0.2"
+        // upgraded from 14.0.2 → 16.1.0 so PyCryptodome bundles as a wheel
+        classpath "com.chaquo.python:gradle:16.1.0"
     }
 }
 
