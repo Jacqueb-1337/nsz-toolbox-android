@@ -1,19 +1,2 @@
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-        maven { url "https://chaquo.com/maven" }
-    }
-    plugins {
-        // Android application plugin
-        id "com.android.application" version "7.4.0"
-        // Kotlin Android support
-        id "org.jetbrains.kotlin.android" version "1.8.21"
-        // Chaquopy Python support
-        id "com.chaquo.python" version "14.0.2"
-    }
-}
-
 rootProject.name = "NSZToolbox"
 include(":app")
