@@ -1,5 +1,6 @@
 package com.jacqueb.nsztoolbox
 
+import android.util.Log
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
