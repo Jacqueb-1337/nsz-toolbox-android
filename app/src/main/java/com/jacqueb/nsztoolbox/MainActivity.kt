@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Start Chaquopy if it hasn't been initialized
+        // Start Chaquopy
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this))
         }
@@ -102,17 +102,25 @@ class MainActivity : AppCompatActivity() {
             val inputName = DocumentFile.fromSingleUri(this, inputUri)!!.name ?: "game.nsz"
             val tempInput = File(cacheDir, inputName)
             val inputStream = contentResolver.openInputStream(inputUri)!!
-            tempInput.outputStream().use { it.write(inputStream.readBytes()) }
 
-            val outputFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
+            inputStream.use { input ->
+                tempInput.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
 
+            // Prepare Python sys.argv and call nsz.main()
             val py = Python.getInstance()
-            val pyObj = py.getModule("main")
-            pyObj.callAttr("convert_nsz_to_nsp", tempInput.absolutePath, outputFile.absolutePath)
+            val sys = py.getModule("sys")
+            sys["argv"] = listOf("nsz", "-D", tempInput.absolutePath, "--outdir", cacheDir.absolutePath)
 
-            val finalOutDoc = tree.createFile("application/octet-stream", outputFile.name!!)!!
+            log("Calling NSZ with arguments: ${sys["argv"]}")
+            py.getModule("nsz").callAttr("main")
+
+            val outFile = File(cacheDir, inputName.replace(".nsz", ".nsp"))
+            val finalOutDoc = tree.createFile("application/octet-stream", outFile.name!!)!!
             val outStream = contentResolver.openOutputStream(finalOutDoc.uri)!!
-            outStream.write(outputFile.readBytes())
+            outStream.write(outFile.readBytes())
             outStream.close()
 
             log("Finished decompression to: ${finalOutDoc.uri}")
