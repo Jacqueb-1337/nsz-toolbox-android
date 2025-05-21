@@ -13,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import com.github.luben.zstd.ZstdInputStream
 
+private const val PREFS_NAME = "settings"
+private const val KEY_OUTPUT_URI = "output_folder"
+
 class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
     private var outputFolderUri: Uri? = null
@@ -24,17 +27,17 @@ class MainActivity : AppCompatActivity() {
     private val folderPicker =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             if (uri != null) {
+                // Persist permissions
                 contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                prefs.edit().putString("output_folder", uri.toString()).apply()
+                prefs.edit().putString(KEY_OUTPUT_URI, uri.toString()).apply()
                 outputFolderUri = uri
-
                 Toast.makeText(this, "Output folder set.", Toast.LENGTH_SHORT).show()
 
-                // If we had a share pending, handle it now:
-                pendingInputUri?.also {
+                // If a share was pending, now process it
+                pendingInputUri?.let {
                     processNSZ(it)
                     pendingInputUri = null
                 }
@@ -47,55 +50,64 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        prefs        = getSharedPreferences("settings", MODE_PRIVATE)
+        prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         deleteToggle = findViewById(R.id.delete_switch)
         logText      = findViewById(R.id.log_text)
 
-        // Try to restore the folder URI:
-        prefs.getString("output_folder", null)?.let {
-            outputFolderUri = Uri.parse(it)
+        // Restore previously picked folder URI (if any)
+        prefs.getString(KEY_OUTPUT_URI, null)?.let { str ->
+            Uri.parse(str).also { uri ->
+                // Check we still hold permission
+                if (contentResolver.persistedUriPermissions.any { it.uri == uri }) {
+                    outputFolderUri = uri
+                }
+            }
         }
 
-        deleteToggle.isChecked =
-            prefs.getBoolean("delete_nsz", false)
+        deleteToggle.isChecked = prefs.getBoolean("delete_nsz", false)
         deleteToggle.setOnCheckedChangeListener { _, checked ->
             prefs.edit().putBoolean("delete_nsz", checked).apply()
         }
 
-        // Handle share intent *after* we've attempted to restore the folder:
+        // Handle a share intent
         if (intent?.action == Intent.ACTION_SEND) {
             intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let { inputUri ->
-                if (outputFolderUri != null) {
-                    // we already have a folder → process immediately
-                    processNSZ(inputUri)
-                } else {
-                    // no folder yet → save and launch picker
-                    pendingInputUri = inputUri
-                    folderPicker.launch(null)
-                }
+                pendingInputUri = inputUri
+                maybeProcessPending()
             }
+        }
+    }
+
+    private fun maybeProcessPending() {
+        val inputUri = pendingInputUri ?: return
+        val outUri   = outputFolderUri
+
+        if (outUri == null) {
+            // Need to pick folder first
+            folderPicker.launch(null)
+        } else {
+            // We have both URIs → process immediately
+            processNSZ(inputUri)
+            pendingInputUri = null
         }
     }
 
     private fun processNSZ(inputUri: Uri) {
         try {
-            val name       = inputUri.lastPathSegment ?: "input.nsz"
-            val outputName = name.substringBeforeLast('.') + ".nsp"
+            val filename   = inputUri.lastPathSegment ?: "input.nsz"
+            val outputName = filename.substringBeforeLast('.') + ".nsp"
 
-            // Safely unwrap our saved folder URI:
-            val treeUri = outputFolderUri
-                ?: throw IllegalStateException("No output folder selected")
-
-            // Use DocumentFile API to create a new child document:
-            val tree = DocumentFile.fromTreeUri(this, treeUri)
+            // Wrap the tree URI
+            val tree = DocumentFile.fromTreeUri(this, outputFolderUri!!)
                 ?: throw IllegalArgumentException("Invalid output-folder URI")
 
+            // Create the new file
             val newFile = tree.createFile(
                 "application/octet-stream",
                 outputName
             ) ?: throw Exception("Could not create $outputName")
 
-            // Stream the decompression:
+            // Stream decompress into it
             contentResolver.openOutputStream(newFile.uri)!!.use { out ->
                 contentResolver.openInputStream(inputUri)!!.use { inp ->
                     ZstdInputStream(inp).use { zstd ->
@@ -104,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Optionally delete the original:
+            // Optionally delete original
             if (deleteToggle.isChecked) {
                 DocumentsContract.deleteDocument(contentResolver, inputUri)
             }
