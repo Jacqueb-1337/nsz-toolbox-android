@@ -2,26 +2,30 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:label="NSZ Toolbox"
-        android:allowBackup="true">
+        android:label="@string/app_name"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:roundIcon="@android:drawable/ic_menu_manage"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
 
-            <!-- Launcher icon entry -->
+            <!-- Home-screen launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Receive shared files via “Share” menu -->
+            <!-- Receive a shared file -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+                <!-- catch all file types; you can narrow this to application/octet-stream if you prefer -->
                 <data android:mimeType="*/*"/>
             </intent-filter>
 
         </activity>
+
     </application>
 </manifest>
