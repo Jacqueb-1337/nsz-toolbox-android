@@ -1,5 +1,3 @@
-println ">>> Using Chaquopy ${pluginManagement.plugins["com.chaquo.python"].version}"
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -13,5 +11,12 @@ pluginManagement {
         id "com.chaquo.python"            version "16.1.0"
     }
 }
+
 rootProject.name = "nsz-toolbox-android"
 include(":app")
+
+// If you really need to log the plugin version, do it *after* the block:
+println ">>> Chaquopy plugin version: " +
+    pluginManagement
+      .plugins["com.chaquo.python"]
+      .version
