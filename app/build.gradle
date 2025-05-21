@@ -40,7 +40,7 @@ android {
     }
 }
 
-// ← This is where your Python deps must go
+// ← This block is mandatory for Chaquopy to see your Python deps
 chaquopy {
     defaultConfig {
         buildPython "python3"
