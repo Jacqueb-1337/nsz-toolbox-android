@@ -40,6 +40,7 @@ android {
     }
 }
 
+// ← This is where your Python deps must go
 chaquopy {
     defaultConfig {
         buildPython "python3"
