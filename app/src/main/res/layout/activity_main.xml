@@ -10,6 +10,13 @@
         android:layout_height="wrap_content"
         android:text="Delete NSZ after conversion?" />
 
+    <!-- ← INSERT YOUR “Choose Folder” BUTTON HERE -->
+    <Button
+        android:id="@+id/btnChooseFolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Choose Output Folder" />
+
     <TextView
         android:id="@+id/log_text"
         android:layout_width="match_parent"
