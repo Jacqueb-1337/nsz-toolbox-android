@@ -1,11 +1,9 @@
-// File: app/build.gradle
-
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.chaquo.python'
 
 android {
-    namespace 'com.jacqueb.nsztoolbox'
+    namespace 'com.example.nsztoolbox'
     compileSdkVersion 34
 
     defaultConfig {
@@ -25,7 +23,7 @@ android {
                 install "requests"
                 install "six"
                 install "pycryptodome==3.20.0"
-                install "zstandard==0.22.0" // will pick up a wheel if --only-binary=:all: is implicit
+                install "zstandard==0.22.0 --only-binary=:all:"
             }
         }
     }
