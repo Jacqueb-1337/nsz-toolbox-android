@@ -1,16 +1,34 @@
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'com.chaquo.python'
+// app/build.gradle
+
+buildscript {
+    ext.kotlin_version = '1.8.21'  // pick a Kotlin version matching your project
+    repositories {
+        google()
+        mavenCentral()
+        // Chaquopy’s Maven repo for the Python plugin and prebuilt wheels
+        maven { url 'https://chaquo.com/maven' }
+    }
+    dependencies {
+        // Android Gradle Plugin
+        classpath "com.android.tools.build:gradle:7.4.0"
+        // Kotlin Gradle plugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // Chaquopy plugin
+        classpath "com.chaquo.python:gradle:14.0.2"
+    }
 }
 
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.chaquo.python'
+
 android {
-    compileSdk 30
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.jacqueb.nsztoolbox"
-        minSdk 21
-        targetSdk 30
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -32,16 +50,17 @@ android {
 
     sourceSets {
         main {
-            // Make sure Chaquopy’s Python assets get bundled
+            // Include Chaquopy’s Python runtime assets
             assets.srcDirs += files("$buildDir/python/interpreter")
         }
     }
 }
 
 python {
-    // Chaquopy will fetch these wheels instead of compiling from source
     pip {
+        // Your other dependencies
         install "requests"
+        // Pin to the prebuilt wheel version so Chaquopy won't try to compile from source
         install "zstandard==0.15.2"
     }
 }
