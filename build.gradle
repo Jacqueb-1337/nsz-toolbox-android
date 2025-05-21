@@ -1,9 +1,10 @@
 // build.gradle (project root)
 
 plugins {
-    id "com.android.application" version "8.0.2" apply false
-    id "org.jetbrains.kotlin.android" version "1.8.21" apply false
-    id "com.chaquo.python" version "16.1.0" apply false
+    // these “apply false” lines make the plugins available to subprojects
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+    id "com.chaquo.python" apply false
 }
 
 allprojects {
