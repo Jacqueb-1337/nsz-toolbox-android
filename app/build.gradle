@@ -1,53 +1,47 @@
 plugins {
     id 'com.android.application'
+    id 'kotlin-android'
     id 'com.chaquo.python'
 }
 
 android {
-    namespace 'com.example.nsztoolbox'
-    compileSdk 34
+    compileSdk 30
 
     defaultConfig {
-        applicationId "com.example.nsztoolbox"
-        minSdk 26
-        targetSdk 34
+        applicationId "com.jacqueb.nsztoolbox"
+        minSdk 21
+        targetSdk 30
         versionCode 1
         versionName "1.0"
 
         ndk {
-            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
-        }
-
-        python {
-            buildPython "python3"
-            pip {
-                install "requests"
-                install "zstandard==0.22.0"
-                install "pycryptodome==3.20.0"
-                install "six"
-            }
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
         }
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    buildFeatures {
-        viewBinding true
+    sourceSets {
+        main {
+            // Make sure Chaquopy’s Python assets get bundled
+            assets.srcDirs += files("$buildDir/python/interpreter")
+        }
     }
 }
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+python {
+    // Chaquopy will fetch these wheels instead of compiling from source
+    pip {
+        install "requests"
+        install "zstandard==0.15.2"
+    }
 }
