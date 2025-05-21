@@ -2,6 +2,7 @@ import sys
 import types
 import builtins
 import warnings
+import traceback
 
 # Disable input() to prevent EOFError
 builtins.input = lambda *args, **kwargs: None
@@ -53,10 +54,7 @@ key_names = [
     "KEY_SRSUME", "KEY_SSAVE", "KEY_SSUSPEND", "KEY_STAB", "KEY_SUNDO",
     "KEY_SUSPEND", "KEY_UNDO", "KEY_MOUSE", "KEY_RESIZE", "KEY_EVENT",
     "KEY_MAX", "KEY_MIN"
-]
-
-# Add KEY_F1 to KEY_F63
-key_names += [f"KEY_F{i}" for i in range(1, 64)]
+] + [f"KEY_F{i}" for i in range(1, 64)]
 
 # Assign dummy integer values to all keys
 for i, key in enumerate(key_names):
@@ -83,4 +81,8 @@ def convert_nsz_to_nsp(input_file, output_dir):
         "--out", output_dir,
         input_file
     ]
-    nsz.main()
+    try:
+        nsz.main()
+    except Exception as e:
+        print(f"[NSZ ERROR] {type(e).__name__}: {e}")
+        traceback.print_exc()
