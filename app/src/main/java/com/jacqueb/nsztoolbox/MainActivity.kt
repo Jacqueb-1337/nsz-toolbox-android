@@ -79,16 +79,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         val fileName = DocumentFile.fromSingleUri(this, inputUri)?.name ?: ""
-        if (fileName == "prod.keys") {
+        if (fileName == "prod.keys" || fileName == "title.keys") {
             try {
-                val keysDir = File(filesDir, ".switch")
-                if (!keysDir.exists()) keysDir.mkdirs()
+                val keysPath = File(filesDir, "chaquopy/AssetFinder/app/NSC_Builder/py/ztools")
+                if (!keysPath.exists()) keysPath.mkdirs()
 
-                val keysFile = File(keysDir, "prod.keys")
+                val keysFile = File(keysPath, fileName)
                 val inputStream = contentResolver.openInputStream(inputUri)!!
                 keysFile.outputStream().use { it.write(inputStream.readBytes()) }
 
-                Toast.makeText(this, "prod.keys saved successfully.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "$fileName saved successfully.", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to save keys: ${e.message}", Toast.LENGTH_LONG).show()
             }
