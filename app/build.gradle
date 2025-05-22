@@ -1,8 +1,6 @@
-plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
-    id "com.chaquo.python"
-}
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.chaquo.python"
 
 android {
     namespace "com.jacqueb.nsztoolbox"
