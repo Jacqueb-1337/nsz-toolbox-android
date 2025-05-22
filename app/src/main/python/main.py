@@ -15,8 +15,8 @@ def convert_nsz_to_nsp(input_file, output_dir):
     print(f"[DEBUG] output writable: {os.access(output_dir, os.W_OK)}")
 
     try:
-        # Adjust the path if needed based on your actual environment
-        squirrel_path = "squirrel.py"
+        script_dir = os.path.dirname(__file__)
+        squirrel_path = os.path.join(script_dir, "squirrel.py")
         with open(squirrel_path, 'r') as f:
             code = compile(f.read(), squirrel_path, 'exec')
             exec(code, {'__name__': '__main__'})
