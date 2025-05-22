@@ -27,10 +27,9 @@ jobs:
 
     - name: Download NSC_Builder
       run: |
-        mkdir -p app/src/main/python
+        mkdir -p app/src/main/python/NSC_Builder
         curl -L https://github.com/julesontheroad/NSC_BUILDER/archive/refs/heads/master.zip -o nsc_builder.zip
         unzip -q nsc_builder.zip
-        mkdir -p app/src/main/python/NSC_Builder
         cp -r NSC_BUILDER-master/* app/src/main/python/NSC_Builder/
 
     - name: Grant execute permission for gradlew
