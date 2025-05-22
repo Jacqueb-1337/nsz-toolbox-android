@@ -1,6 +1,8 @@
-apply plugin: "com.android.application"
-apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.chaquo.python"
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "com.chaquo.python"
+}
 
 android {
     namespace "com.jacqueb.nsztoolbox"
@@ -32,6 +34,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        dataBinding true
     }
 }
 
@@ -39,13 +42,15 @@ chaquopy {
     defaultConfig {
         buildPython "python3"
         pip {
-            install "urllib3", "certifi"
+            install "nsz"
         }
     }
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.21"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.9.0"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation "com.github.luben:zstd-jni:1.5.2-4"
 }
