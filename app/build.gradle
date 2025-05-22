@@ -39,21 +39,23 @@ android {
 }
 
 chaquopy {
-    python {
-        pip {
-            install "urllib3"
-            install "unidecode"
-            install "tqdm"
-            install "beautifulsoup4"
-            install "requests"
-            install "image"
-            install "pycryptodome"
-            install "pykakasi"
-            install "googletrans==4.0.0rc1"
-            install "chardet"
-            install "bottle"
-            install "git+https://github.com/ChrisKnott/Eel.git"
-        }
+    defaultConfig {
+        pythonVersion "3.10"
+    }
+
+    pip {
+        install "urllib3"
+        install "unidecode"
+        install "tqdm"
+        install "beautifulsoup4"
+        install "requests"
+        install "image"
+        install "pycryptodome"
+        install "pykakasi"
+        install "googletrans==4.0.0rc1"
+        install "chardet"
+        install "bottle"
+        install "git+https://github.com/ChrisKnott/Eel.git"
     }
 }
 
