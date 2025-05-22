@@ -31,8 +31,12 @@ jobs:
         curl -L https://github.com/julesontheroad/NSC_BUILDER/archive/refs/heads/master.zip -o nsc_builder.zip
         unzip -q nsc_builder.zip
 
-        # Move all .py files from ztools to main Python source
-        find NSC_BUILDER-master/py/ztools -name "*.py" -exec cp {} app/src/main/python/ \;
+        # Copy squirrel.py to root of python source
+        cp NSC_BUILDER-master/py/ztools/squirrel.py app/src/main/python/
+
+        # Copy all other ztools .py files into subfolder
+        mkdir -p app/src/main/python/ztools
+        find NSC_BUILDER-master/py/ztools -name "*.py" ! -name "squirrel.py" -exec cp {} app/src/main/python/ztools/ \;
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
