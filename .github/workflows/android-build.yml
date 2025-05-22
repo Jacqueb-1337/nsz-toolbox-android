@@ -32,10 +32,15 @@ jobs:
         unzip -q nsc_builder.zip
         cp -r NSC_BUILDER-master/* app/src/main/python/NSC_Builder/
 
-    - name: Debug List contents of NSC_Builder after copy
+    - name: Fix sq_settings.py path
       run: |
-        echo "Listing all files in app/src/main/python/NSC_Builder"
-        find app/src/main/python/NSC_Builder -type f | sort
+        mv app/src/main/python/NSC_Builder/py/ztools/lib/sq_settings.py \
+           app/src/main/python/NSC_Builder/py/ztools/
+
+    - name: Debug: List contents of NSC_Builder after fix
+      run: |
+        echo "Verifying sq_settings.py location:"
+        find app/src/main/python/NSC_Builder/py/ztools -name "sq_settings.py"
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
