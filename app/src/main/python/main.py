@@ -5,9 +5,8 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Set up the path to NSC_Builder's ztools directory
-ztools_path = os.path.join(os.path.dirname(__file__), 'NSC_Builder', 'py', 'ztools')
-sys.path.insert(0, ztools_path)
+script_dir = os.path.dirname(__file__)
+sys.path.insert(0, script_dir)
 
 def convert_nsz_to_nsp(input_file, output_dir):
     sys.argv = [
@@ -22,7 +21,7 @@ def convert_nsz_to_nsp(input_file, output_dir):
     print(f"[DEBUG] output writable: {os.access(output_dir, os.W_OK)}")
 
     try:
-        squirrel_path = os.path.join(ztools_path, "squirrel.py")
+        squirrel_path = os.path.join(script_dir, "squirrel.py")
         with open(squirrel_path, 'r') as f:
             code = compile(f.read(), squirrel_path, 'exec')
             exec(code, {'__name__': '__main__'})
