@@ -43,6 +43,7 @@ chaquopy {
         buildPython "python3"
         pip {
             install "nsz"
+            install "urllib3"
         }
     }
 }
