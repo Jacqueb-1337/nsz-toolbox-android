@@ -2,7 +2,7 @@ import sys
 import os
 import traceback
 import logging
-import importlib.util
+import runpy
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -22,19 +22,7 @@ def convert_nsz_to_nsp(input_file, output_dir):
     print(f"[DEBUG] output writable: {os.access(output_dir, os.W_OK)}")
 
     try:
-        # Load squirrel.py as a module
-        spec = importlib.util.find_spec("squirrel")
-        if spec is None:
-            raise ImportError("squirrel module not found")
-
-        squirrel = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(squirrel)
-
-        # Call main() if defined
-        if hasattr(squirrel, "main"):
-            squirrel.main()
-        else:
-            print("[NSC_Builder ERROR] squirrel.py has no 'main' function")
+        runpy.run_module("squirrel", run_name="__main__")
     except Exception as e:
         print(f"[NSC_Builder ERROR] {type(e).__name__}: {e}")
         traceback.print_exc()
