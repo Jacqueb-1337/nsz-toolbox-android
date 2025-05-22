@@ -4,14 +4,16 @@ import builtins
 import warnings
 import traceback
 import os
+import logging
 
 # Disable input() to prevent EOFError
 builtins.input = lambda *args, **kwargs: None
 
+# Set up debug-level logging to capture NSZ internal messages
+logging.basicConfig(level=logging.DEBUG)
+
 # Create mock curses module
 curses = types.ModuleType("curses")
-
-# Stub functions
 curses.initscr = lambda: None
 curses.endwin = lambda: None
 curses.wrapper = lambda func, *args, **kwargs: func(*args, **kwargs)
@@ -26,8 +28,6 @@ curses.init_pair = lambda a, b, c: None
 curses.color_pair = lambda x: 0
 curses.has_colors = lambda: False
 curses.has_key = lambda x: False
-
-# Attributes
 curses.A_NORMAL = 0
 curses.A_BOLD = 1
 curses.A_UNDERLINE = 2
@@ -35,7 +35,8 @@ curses.A_REVERSE = 4
 curses.A_BLINK = 8
 curses.A_DIM = 16
 curses.A_STANDOUT = 32
-# KEY constants
+
+# Add KEY_ constants
 key_names = [
     "KEY_DOWN", "KEY_UP", "KEY_LEFT", "KEY_RIGHT", "KEY_HOME", "KEY_BACKSPACE",
     "KEY_DL", "KEY_IL", "KEY_DC", "KEY_IC", "KEY_EIC", "KEY_CLEAR", "KEY_EOS",
@@ -65,10 +66,8 @@ curses_has_key._capability_names = {}
 sys.modules["curses"] = curses
 sys.modules["curses.has_key"] = curses_has_key
 
-# Suppress deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# Import and run NSZ
 import nsz
 
 def convert_nsz_to_nsp(input_file, output_dir):
@@ -77,6 +76,7 @@ def convert_nsz_to_nsp(input_file, output_dir):
     ]
     print(f"[DEBUG] sys.argv: {sys.argv}")
     print(f"[DEBUG] input exists: {os.path.exists(input_file)}")
+    print(f"[DEBUG] output writable: {os.access(output_dir, os.W_OK)}")
 
     try:
         nsz.main()
