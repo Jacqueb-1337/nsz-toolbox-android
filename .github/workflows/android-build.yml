@@ -34,7 +34,7 @@ jobs:
 
     - name: Debug: List contents of NSC_Builder after copy
       run: |
-        echo "Showing contents of app/src/main/python/NSC_Builder:"
+        echo "Listing all files in app/src/main/python/NSC_Builder:"
         find app/src/main/python/NSC_Builder -type f | sort
 
     - name: Grant execute permission for gradlew
