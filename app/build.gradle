@@ -41,7 +41,6 @@ android {
 chaquopy {
     defaultConfig {
         buildPython "python3"
-        sourceRoots = ["src/main/python"]
 
         pip {
             install "urllib3"
