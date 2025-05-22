@@ -39,10 +39,6 @@ android {
 }
 
 chaquopy {
-    defaultConfig {
-        pythonVersion "3.10"
-    }
-
     pip {
         install "urllib3"
         install "unidecode"
