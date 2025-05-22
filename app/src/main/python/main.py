@@ -2,10 +2,10 @@ import sys
 import os
 import traceback
 import logging
-import runpy
 
 logging.basicConfig(level=logging.DEBUG)
 
+# Set up the path to NSC_Builder's ztools directory
 ztools_path = os.path.join(os.path.dirname(__file__), 'NSC_Builder', 'py', 'ztools')
 sys.path.insert(0, ztools_path)
 
@@ -22,7 +22,10 @@ def convert_nsz_to_nsp(input_file, output_dir):
     print(f"[DEBUG] output writable: {os.access(output_dir, os.W_OK)}")
 
     try:
-        runpy.run_path(os.path.join(ztools_path, "squirrel.py"), run_name="__main__")
+        squirrel_path = os.path.join(ztools_path, "squirrel.py")
+        with open(squirrel_path, 'r') as f:
+            code = compile(f.read(), squirrel_path, 'exec')
+            exec(code, {'__name__': '__main__'})
     except Exception as e:
         print(f"[NSC_Builder ERROR] {type(e).__name__}: {e}")
         traceback.print_exc()
