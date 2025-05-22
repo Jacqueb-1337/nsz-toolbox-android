@@ -3,10 +3,12 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven { url "https://chaquo.com/maven" }
     }
-
     plugins {
-        id "org.jetbrains.kotlin.android" version "1.9.10"
+        id "com.android.application"      version "8.0.2"
+        id "org.jetbrains.kotlin.android" version "1.8.21"
+        id "com.chaquo.python"            version "16.1.0"
     }
 }
 
