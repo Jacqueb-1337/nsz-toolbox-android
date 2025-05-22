@@ -37,7 +37,7 @@ jobs:
         mv app/src/main/python/NSC_Builder/py/ztools/lib/sq_settings.py \
            app/src/main/python/NSC_Builder/py/ztools/
 
-    - name: Debug: List contents of NSC_Builder after fix
+    - name: Debug List contents of NSC_Builder after fix
       run: |
         echo "Verifying sq_settings.py location:"
         find app/src/main/python/NSC_Builder/py/ztools -name "sq_settings.py"
