@@ -27,20 +27,12 @@ jobs:
 
     - name: Download NSC_Builder
       run: |
-        mkdir -p app/src/main/python/NSC_Builder
+        mkdir -p app/src/main/python
         curl -L https://github.com/julesontheroad/NSC_BUILDER/archive/refs/heads/master.zip -o nsc_builder.zip
         unzip -q nsc_builder.zip
-        cp -r NSC_BUILDER-master/* app/src/main/python/NSC_Builder/
 
-    - name: Move lib/*.py to ztools
-      run: |
-        mv app/src/main/python/NSC_Builder/py/ztools/lib/*.py \
-           app/src/main/python/NSC_Builder/py/ztools/
-
-    - name: Debug list ztools
-      run: |
-        echo "Listing ztools after move:"
-        find app/src/main/python/NSC_Builder/py/ztools -maxdepth 1 -name "*.py" | sort
+        # Move all .py files from ztools to main Python source
+        find NSC_BUILDER-master/py/ztools -name "*.py" -exec cp {} app/src/main/python/ \;
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
